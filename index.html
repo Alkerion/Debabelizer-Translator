@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debabelizer Translator — Firefox Extension</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1c1c1c;
+      --muted: #6b6b6b;
+      --rule: #e4e4e0;
+      --accent: #2a5caa;
+      --accent-light: #eef2fb;
+      --bg: #f8f8f6;
+      --card: #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(248,248,246,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--rule);
+      padding: 0.9rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .nav-brand span { color: var(--accent); font-style: italic; }
+
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3.5rem;
+      display: flex;
+      gap: 2.5rem;
+      align-items: flex-start;
+    }
+
+    .hero-icon {
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+      background: var(--accent-light);
+      border: 1px solid #c8d8f5;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .hero-text h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-text h1 em { font-style: italic; color: var(--accent); }
+
+    .hero-subtitle {
+      margin-top: 0.6rem;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .hero-meta {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .chip {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid #c8d8f5;
+      border-radius: 2px;
+      padding: 0.2rem 0.55rem;
+    }
+
+    .chip.neutral {
+      background: #f0f0ee;
+      color: var(--muted);
+      border-color: var(--rule);
+    }
+
+    /* DOWNLOAD BAND */
+    .download-band {
+      background: var(--accent);
+      padding: 1.5rem 2rem;
+    }
+
+    .download-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .download-band p { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+
+    .download-band strong {
+      color: #fff;
+      display: block;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .btn-dl {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fff;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 3px;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+
+    .btn-dl:hover { opacity: 0.9; }
+
+    /* MAIN */
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      background: var(--card);
+      margin: 3rem 0;
+      overflow: hidden;
+    }
+
+    .grid-cell {
+      padding: 1.75rem;
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .grid-cell:nth-child(2n) { border-right: none; }
+    .grid-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+    .grid-cell h3 {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .grid-cell p { font-size: 0.93rem; }
+
+    /* SECTIONS */
+    .section { padding: 2.5rem 0; border-top: 1px solid var(--rule); }
+
+    .section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+
+    .section p {
+      font-size: 0.95rem;
+      color: #3a3a3a;
+      margin-bottom: 0.75rem;
+    }
+
+    .section p:last-child { margin-bottom: 0; }
+
+    /* FEATURE LIST */
+    .feature-list {
+      list-style: none;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      background: var(--card);
+      overflow: hidden;
+    }
+
+    .feature-list li {
+      padding: 0.9rem 1.25rem;
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.93rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .feature-list li:last-child { border-bottom: none; }
+
+    .feature-list li::before {
+      content: '→';
+      color: var(--accent);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+
+    /* CREDITS */
+    .credits-box {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 1.5rem 1.75rem;
+      font-size: 0.9rem;
+    }
+
+    .credits-box a { color: var(--accent); text-decoration: none; }
+    .credits-box a:hover { text-decoration: underline; }
+    .credits-box p { margin-bottom: 0.6rem; color: #3a3a3a; }
+    .credits-box p:last-child { margin-bottom: 0; color: var(--muted); font-size: 0.85rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--muted); }
+
+    @media (max-width: 580px) {
+      .hero { flex-direction: column; gap: 1.25rem; padding: 3rem 1.25rem 2rem; }
+      main { padding: 0 1.25rem 3rem; }
+      .grid { grid-template-columns: 1fr; }
+      .grid-cell { border-right: none !important; border-bottom: 1px solid var(--rule) !important; }
+      .grid-cell:last-child { border-bottom: none !important; }
+      .download-inner { flex-direction: column; align-items: flex-start; }
+      nav { padding: 0.75rem 1.25rem; }
+      .nav-links { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#"><em>Debabelizer</em> Translator</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#credits">Credits</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-icon">🌐</div>
+  <div class="hero-text">
+    <h1><em>Debabelizer</em> Translator</h1>
+    <p class="hero-subtitle">A fast, lightweight translation tool for Firefox — built on Google Translate.</p>
+    <div class="hero-meta">
+      <span class="chip">v1.0.2</span>
+      <span class="chip">Firefox 109+</span>
+      <span class="chip neutral">MPL 2.0</span>
+      <span class="chip neutral">~90 KB</span>
+    </div>
+  </div>
+</div>
+
+<div class="download-band">
+  <div class="download-inner">
+    <div>
+      <strong>Download for Firefox</strong>
+      <p>Signed extension · Requires Firefox 109 or later</p>
+    </div>
+    <a class="btn-dl" href="debabelizer-1.0.2.xpi">↓ Download .xpi</a>
+  </div>
+</div>
+
+<main>
+
+  <div class="grid">
+    <div class="grid-cell">
+      <h3>Version</h3>
+      <p>1.0.2</p>
+    </div>
+    <div class="grid-cell">
+      <h3>Firefox minimum</h3>
+      <p>109.0</p>
+    </div>
+    <div class="grid-cell">
+      <h3>License</h3>
+      <p>Mozilla Public License 2.0</p>
+    </div>
+    <div class="grid-cell">
+      <h3>Data collection</h3>
+      <p>None — no personal data collected or transmitted</p>
+    </div>
+  </div>
+
+  <div class="section" id="about">
+    <h2>About this extension</h2>
+    <p>Debabelizer Translator is a lightweight Firefox extension that brings Google Translate directly into your browser toolbar. Type any text, select it on a page, or use the right-click context menu to translate instantly — without opening a new tab.</p>
+    <p>This is a maintained fork of the original Google™ Translator extension by Andy Portmen, updated for compatibility with current versions of Firefox. The Google Translate API endpoint has been corrected, deprecated code removed, and the manifest updated to meet current Mozilla standards.</p>
+    <p><strong>Note:</strong> This extension is not affiliated with or endorsed by Google LLC.</p>
+  </div>
+
+  <div class="section" id="features">
+    <h2>Features</h2>
+    <ul class="feature-list">
+      <li>One-click translation via the toolbar popup</li>
+      <li>Translate selected text by holding Alt or Insert key</li>
+      <li>Pop-up bubble translator on any webpage</li>
+      <li>Right-click context menu: translate selected text or full page</li>
+      <li>Auto-detection of source language</li>
+      <li>Translation history with quick recall</li>
+      <li>Text-to-speech for translated content</li>
+      <li>Swap source and target languages in one click</li>
+      <li>Supports all languages available in Google Translate</li>
+    </ul>
+  </div>
+
+  <div class="section" id="credits">
+    <h2>Credits &amp; License</h2>
+    <div class="credits-box">
+      <p>Based on <strong>Google™ Translator</strong> by <a href="mailto:andy.portmen@gmail.com">Andy Portmen</a> — <a href="https://add0n.com/google-translator.html" target="_blank">add0n.com</a></p>
+      <p>Original source: <a href="https://github.com/info-add0n/Simple-Translate" target="_blank">github.com/info-add0n/Simple-Translate</a></p>
+      <p>Fork maintained by Alkerion, 2026. Fixes: corrected Google Translate API URL, modernized Promise API, removed deprecated code and dead files, updated manifest for Firefox 109+.</p>
+      <p>Distributed under the <a href="https://www.mozilla.org/en-US/MPL/2.0/" target="_blank">Mozilla Public License 2.0</a>.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Debabelizer Translator · Fork of Google™ Translator by Andy Portmen · <a href="https://www.mozilla.org/en-US/MPL/2.0/">MPL 2.0</a>
+</footer>
+
+</body>
+</html>
